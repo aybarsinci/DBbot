@@ -1,0 +1,18 @@
+# Environment
+.env
+.env.*
+
+# SQLite database
+links.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# IDE files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

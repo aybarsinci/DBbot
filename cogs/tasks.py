@@ -16,7 +16,7 @@ class RankManagerCog(commands.Cog):
         if not self.refresh_all_ranks.is_running():
             self.refresh_all_ranks.start()
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=3)
     async def refresh_all_ranks(self):
         start_ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{start_ts}] 🔄 Refreshing all linked users' ranks…")
@@ -32,7 +32,7 @@ class RankManagerCog(commands.Cog):
             if not member:
                 continue
 
-            # Fetch with timeout and robust error handling
+            # 1) Fetch with timeout and robust error handling
             try:
                 entry = fetch_season7_entry(account_id, timeout=5.0)
             except (requests.HTTPError, requests.RequestException) as e:
@@ -41,18 +41,18 @@ class RankManagerCog(commands.Cog):
             if not entry:
                 continue
 
-            # Compute the broad tier
+            # 2) Compute the broad tier
             league = entry.get("league", "")
             broad  = league.split()[0] if league else "Unranked"
             if broad not in VALID_RANKS:
                 broad = "Unranked"
 
-            # Only proceed if they actually need a new tier
+            # 3) Only proceed if they actually need a new tier
             current = {r.name for r in member.roles}
             if broad in current:
                 continue
 
-            # Remove any old tier roles, catching permission errors
+            # 4) Remove any old tier roles, catching permission errors
             old_roles = [r for r in member.roles if r.name in VALID_RANKS]
             if old_roles:
                 try:
@@ -61,7 +61,7 @@ class RankManagerCog(commands.Cog):
                     print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ⚠️ Cannot remove roles from {member.display_name}, missing permissions.")
                     continue
 
-            # Get or create the new role, catching permission errors
+            # 5) Get or create the new role, catching permission errors
             role = discord.utils.get(guild.roles, name=broad)
             if role is None:
                 try:
@@ -70,7 +70,7 @@ class RankManagerCog(commands.Cog):
                     print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ⚠️ Cannot create role {broad}, missing permissions.")
                     continue
 
-            # Assign the new role, catching permission errors
+            # 6) Assign the new role, catching permission errors
             try:
                 await member.add_roles(role, reason="Auto rank refresh")
             except discord.Forbidden:

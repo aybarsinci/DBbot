@@ -1,9 +1,7 @@
-import os, sqlite3
+import sqlite3
 
-# If DB_PATH isn’t set in the environment, fall back to your local file:
-DB_PATH = os.getenv('DB_PATH', 'links.db')
-
-conn = sqlite3.connect(DB_PATH)
+# Open (or create) links.db in the working directory
+conn = sqlite3.connect('links.db')
 c    = conn.cursor()
 
 def init_db():
